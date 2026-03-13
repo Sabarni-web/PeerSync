@@ -1,0 +1,27 @@
+.mentor-dash { max-width: 800px; margin: 0 auto; }
+
+.md-header { padding: 32px; background: var(--gradient-accent); border-radius: var(--radius-xl); margin-bottom: 24px; position: relative; overflow: hidden; }
+.md-header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top left, rgba(255,255,255,0.12), transparent); }
+.md-header-text { position: relative; }
+.md-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+.md-header p { color: rgba(255,255,255,0.8); font-size: 0.95rem; }
+
+.md-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.md-stat-card { padding: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); text-align: center; transition: var(--transition); }
+.md-stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.md-stat-icon { font-size: 1.6rem; display: block; margin-bottom: 8px; }
+.md-stat-val { display: block; font-size: 2rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.md-stat-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+
+.md-section { padding: 28px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 20px; }
+.md-section h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 20px; }
+
+.md-profile-info { display: flex; flex-direction: column; gap: 14px; }
+.md-info-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.md-info-row > span:first-child { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; min-width: 120px; }
+
+.md-empty { text-align: center; padding: 40px 20px; }
+.md-empty span:first-child { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+.md-empty p { font-size: 1rem; color: var(--text-secondary); margin-bottom: 4px; }
+
+@media (max-width: 768px) { .md-stats-grid { grid-template-columns: repeat(2, 1fr); } }

@@ -1,0 +1,33 @@
+.feedback-card { max-width: 580px; margin: 0 auto; padding: 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
+.feedback-header { text-align: center; margin-bottom: 32px; }
+.feedback-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; }
+.feedback-header p { color: var(--text-secondary); font-size: 0.9rem; }
+.feedback-body { display: flex; flex-direction: column; gap: 24px; }
+
+.rating-row { display: flex; justify-content: space-between; align-items: center; }
+.rating-label { font-size: 0.9rem; color: var(--text-secondary); font-weight: 500; }
+.stars { display: flex; gap: 4px; }
+.star { background: none; font-size: 1.8rem; color: var(--text-muted); transition: var(--transition); padding: 0 2px; }
+.star.active { color: #ffc107; }
+.star:hover { color: #ffd54f; transform: scale(1.2); }
+
+.toggle-row { display: flex; flex-direction: column; gap: 10px; }
+.toggle-btns { display: flex; gap: 8px; }
+.toggle-btn { padding: 8px 18px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 100px; color: var(--text-secondary); font-size: 0.85rem; transition: var(--transition); }
+.toggle-btn:hover { border-color: var(--primary); }
+.toggle-btn.active { background: rgba(102,126,234,0.15); border-color: var(--primary); color: var(--primary-light); }
+
+.comment-group { display: flex; flex-direction: column; gap: 8px; }
+.comment-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+.comment-group textarea { padding: 12px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.9rem; resize: vertical; transition: var(--transition); }
+.comment-group textarea:focus { border-color: var(--primary); }
+.comment-group textarea::placeholder { color: var(--text-muted); }
+
+.btn-submit-feedback { padding: 14px; background: var(--gradient-primary); color: white; border-radius: var(--radius-md); font-size: 1rem; font-weight: 600; transition: var(--transition); margin-top: 8px; }
+.btn-submit-feedback:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
+.btn-submit-feedback:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.feedback-success { text-align: center; padding: 80px 20px; }
+.success-icon { font-size: 4rem; display: block; margin-bottom: 20px; }
+.feedback-success h2 { font-size: 1.8rem; margin-bottom: 12px; }
+.feedback-success p { color: var(--text-secondary); margin-bottom: 32px; }
