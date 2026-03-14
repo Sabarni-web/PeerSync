@@ -84,3 +84,79 @@
 }
 .mac-join-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.45); }
 
+/* ── Pending Requests Panel ──────────────────────────────────────────────── */
+.md-pending-section {
+  background: rgba(251, 191, 36, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: var(--radius-xl);
+  padding: 22px 24px;
+  margin-bottom: 24px;
+}
+
+.md-pending-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.95rem; font-weight: 700;
+  color: #fbbf24; margin-bottom: 16px;
+}
+
+.pending-pulse {
+  width: 10px; height: 10px;
+  background: #fbbf24;
+  border-radius: 50%;
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+
+.md-pending-list { display: flex; flex-direction: column; gap: 12px; }
+
+.md-pending-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  transition: border-color 0.2s;
+}
+.md-pending-card:hover { border-color: rgba(251, 191, 36, 0.45); }
+
+.mpc-avatar {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+
+.mpc-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.mpc-student { font-size: 0.95rem; font-weight: 600; }
+.mpc-meta    { font-size: 0.78rem; color: var(--text-muted); }
+
+.mpc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.mpc-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s ease;
+  border: none;
+}
+.mpc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.mpc-decline {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+.mpc-decline:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.mpc-accept {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
+}
+.mpc-accept:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}

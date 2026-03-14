@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
 import api from '../../services/api';
 import './FindMentor.css';
 
@@ -23,6 +24,19 @@ const FindMentor = () => {
   const [connectModal, setConnectModal] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [connecting, setConnecting] = useState(false);
+
+  // Waiting for mentor to accept
+  const [waitingSession, setWaitingSession] = useState(null); // { sessionId, mentorName, subject }
+
+  const { sessionRequest, clearRequest } = useSocket();
+
+  // When a decline comes through SocketContext, clear the waiting state
+  useEffect(() => {
+    if (sessionRequest?.declined && waitingSession) {
+      setWaitingSession(null);
+      // Don't clearRequest here — GlobalSessionNotifier shows the error
+    }
+  }, [sessionRequest]);
 
   // ── Fetch all mentors and ML status on mount ─────────────────────────────
   useEffect(() => {
@@ -90,7 +104,7 @@ const FindMentor = () => {
     setSelectedSubject('');
   };
 
-  // ── Start Session & Navigate to Chat ─────────────────────────────────────
+  // ── Request Session (pending — wait for mentor accept) ───────────────────
   const handleConnect = async () => {
     if (!connectModal || !selectedSubject) return;
     setConnecting(true);
@@ -103,14 +117,34 @@ const FindMentor = () => {
         matchScore: mentor.match_percentage || 0,
       });
 
-      const sessionId = res.data._id;
+      // If session was already active (resumed), go straight to chat
+      if (res.data.status === 'active' || res.data.resumed) {
+        closeConnectModal();
+        navigate(`/chat/${res.data._id}`);
+        return;
+      }
+
+      // Otherwise, wait for mentor to accept
+      setWaitingSession({
+        sessionId:  res.data._id,
+        mentorName: mentor.name,
+        subject:    selectedSubject,
+      });
       closeConnectModal();
-      navigate(`/chat/${sessionId}`);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to start session. Please try again.');
+      alert(err.response?.data?.message || 'Failed to send request. Please try again.');
     } finally {
       setConnecting(false);
     }
+  };
+
+  // ── Cancel a pending request ──────────────────────────────────────────────
+  const handleCancelRequest = async () => {
+    if (!waitingSession) return;
+    try {
+      await api.put(`/sessions/${waitingSession.sessionId}/decline`);
+    } catch { /* best-effort */ }
+    setWaitingSession(null);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -357,9 +391,29 @@ const FindMentor = () => {
                 onClick={handleConnect}
                 disabled={!selectedSubject || connecting}
               >
-                {connecting ? '⏳ Starting...' : '🚀 Start Session'}
+                {connecting ? '⏳ Sending...' : '📨 Request Session'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Waiting for Mentor Screen ──────────────────────────────────── */}
+      {waitingSession && (
+        <div className="modal-overlay">
+          <div className="modal-box waiting-box">
+            <div className="waiting-spinner" />
+            <h3>Waiting for Mentor...</h3>
+            <p>
+              Your request has been sent to{' '}
+              <strong>{waitingSession.mentorName}</strong>.
+              <br />
+              Subject: <span className="gsn-subject">{waitingSession.subject}</span>
+            </p>
+            <p className="waiting-note">The session will start automatically once they accept.</p>
+            <button className="btn-cancel" style={{ marginTop: '8px' }} onClick={handleCancelRequest}>
+              Cancel Request
+            </button>
           </div>
         </div>
       )}

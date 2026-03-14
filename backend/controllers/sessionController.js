@@ -1,7 +1,7 @@
 const Session = require('../models/Session');
 const Message = require('../models/Message');
 
-// @desc    Start a session
+// @desc    Request a session (student → mentor) — status starts as 'pending'
 // @route   POST /api/sessions/start
 const startSession = async (req, res) => {
   const { mentorId, subject, matchScore } = req.body;
@@ -10,11 +10,11 @@ const startSession = async (req, res) => {
     return res.status(400).json({ message: 'mentorId and subject are required' });
   }
 
-  // Check if there's already an active session between this student and mentor
+  // Prevent duplicate pending or active session between same pair
   const existing = await Session.findOne({
     studentId: req.user._id,
     mentorId,
-    status: 'active',
+    status: { $in: ['pending', 'active'] },
   }).populate('studentId', 'name email').populate('mentorId', 'name email mentorProfile');
 
   if (existing) {
@@ -26,15 +26,96 @@ const startSession = async (req, res) => {
     mentorId,
     subject,
     matchScore: matchScore || 0,
-    status:     'active',
-    startedAt:  new Date(),
+    status:     'pending',         // ← waits for mentor to accept
   });
 
   const populated = await Session.findById(session._id)
     .populate('studentId', 'name email')
     .populate('mentorId', 'name email mentorProfile');
 
+  // Notify mentor via Socket.IO
+  const io = req.app.locals.io;
+  if (io) {
+    io.to(`mentor_${mentorId}`).emit('session_request', {
+      sessionId:   session._id.toString(),
+      studentName: req.user.name,
+      studentId:   req.user._id.toString(),
+      subject,
+      matchScore:  matchScore || 0,
+    });
+  }
+
   res.status(201).json(populated);
+};
+
+
+// @desc    Mentor accepts a pending session
+// @route   PUT /api/sessions/:id/accept
+const acceptSession = async (req, res) => {
+  const session = await Session.findById(req.params.id);
+
+  if (!session) {
+    return res.status(404).json({ message: 'Session not found' });
+  }
+
+  if (session.mentorId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: 'Only the assigned mentor can accept this session' });
+  }
+
+  if (session.status !== 'pending') {
+    return res.status(400).json({ message: `Session is already ${session.status}` });
+  }
+
+  session.status    = 'active';
+  session.startedAt = new Date();
+  await session.save();
+
+  // Notify both participants — they'll navigate to /chat/:sessionId
+  const io = req.app.locals.io;
+  if (io) {
+    io.to(session._id.toString()).emit('session_accepted', {
+      sessionId: session._id.toString(),
+    });
+    // Also push to the student's private room (they may not be in session room yet)
+    io.to(`student_${session.studentId.toString()}`).emit('session_accepted', {
+      sessionId: session._id.toString(),
+    });
+  }
+
+  res.json({ message: 'Session accepted', sessionId: session._id });
+};
+
+
+// @desc    Mentor declines a pending session
+// @route   PUT /api/sessions/:id/decline
+const declineSession = async (req, res) => {
+  const session = await Session.findById(req.params.id);
+
+  if (!session) {
+    return res.status(404).json({ message: 'Session not found' });
+  }
+
+  if (session.mentorId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: 'Only the assigned mentor can decline this session' });
+  }
+
+  if (session.status !== 'pending') {
+    return res.status(400).json({ message: `Session is already ${session.status}` });
+  }
+
+  session.status = 'declined';
+  await session.save();
+
+  // Notify the student
+  const io = req.app.locals.io;
+  if (io) {
+    io.to(`student_${session.studentId.toString()}`).emit('session_declined', {
+      sessionId:   session._id.toString(),
+      mentorName:  req.user.name,
+    });
+  }
+
+  res.json({ message: 'Session declined' });
 };
 
 
@@ -135,4 +216,4 @@ const getSession = async (req, res) => {
   res.json(session);
 };
 
-module.exports = { startSession, endSession, getMySessions, getSessionMessages, getSession };
+module.exports = { startSession, acceptSession, declineSession, endSession, getMySessions, getSessionMessages, getSession };

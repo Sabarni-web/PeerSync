@@ -260,6 +260,20 @@ const Chat = () => {
     </div>
   );
 
+  // ── Pending: waiting for mentor to accept ──────────────────────────────────
+  if (session?.status === 'pending') return (
+    <div className="chat-page">
+      <div className="chat-loading">
+        <div className="chat-spinner" />
+        <p style={{ marginTop: '12px', fontWeight: 600 }}>Waiting for {otherName} to accept…</p>
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          You'll be connected automatically once they accept your request.
+        </span>
+      </div>
+    </div>
+  );
+
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="chat-page">

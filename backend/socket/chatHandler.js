@@ -5,6 +5,18 @@ const setupChatSocket = (io) => {
   io.on('connection', (socket) => {
     console.log(`🔌 Socket connected: ${socket.id}`);
 
+    // ── Register a user to their private room (for mentor notifications) ────
+    // Both mentors and students join a personal room on app load
+    socket.on('register_user', (userId) => {
+      if (userId) {
+        socket.join(`user_${userId}`);
+        // Keep backward-compat room names
+        socket.join(`mentor_${userId}`);
+        socket.join(`student_${userId}`);
+        console.log(`👤 ${socket.id} registered as user: ${userId}`);
+      }
+    });
+
     // ── Join a session room ─────────────────────────────────────────────────
     socket.on('join_session', async ({ sessionId, userId }) => {
       socket.join(sessionId);
@@ -14,7 +26,6 @@ const setupChatSocket = (io) => {
       try {
         const user = await User.findById(userId).select('name').lean();
         if (user) {
-          // Broadcast to everyone else in the room (not the joiner themselves)
           socket.to(sessionId).emit('peer_joined', {
             userId,
             userName: user.name,
@@ -60,7 +71,6 @@ const setupChatSocket = (io) => {
         const message = await Message.findById(messageId);
         if (!message) return;
 
-        // Toggle: if user already reacted with this emoji, remove it; otherwise add it
         const existingIdx = message.reactions.findIndex(
           r => r.emoji === emoji && r.userId?.toString() === userId
         );
@@ -73,7 +83,6 @@ const setupChatSocket = (io) => {
 
         await message.save();
 
-        // Broadcast updated reactions to the session room
         io.to(sessionId).emit('message_reaction_updated', {
           messageId,
           reactions: message.reactions,
@@ -106,4 +115,3 @@ const setupChatSocket = (io) => {
 };
 
 module.exports = setupChatSocket;
-

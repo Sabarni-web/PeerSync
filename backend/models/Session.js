@@ -22,8 +22,8 @@ const sessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'completed', 'cancelled'],
-      default: 'active',
+      enum: ['pending', 'active', 'completed', 'cancelled', 'declined'],
+      default: 'pending',
     },
     startedAt: {
       type: Date,
